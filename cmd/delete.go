@@ -1,0 +1,60 @@
+package cmd
+
+import (
+	"fmt"
+	"os"
+	"strconv"
+
+	"example.com/todo-cli/internal/storage"
+	"example.com/todo-cli/internal/task"
+	"github.com/spf13/cobra"
+)
+
+var deleteCmd = &cobra.Command{
+	Run: func(cmd *cobra.Command, args []string) {
+		handleDelete(args)
+	},
+	Args:  cobra.MinimumNArgs(1),
+	Use:   "delete [taskID]",
+	Short: "Delete a given task",
+}
+
+func init() {
+	rootCmd.AddCommand(deleteCmd)
+}
+
+func handleDelete(args []string) {
+
+	if len(args) < 3 {
+		fmt.Fprintf(os.Stderr, "Missing task ID. Required format: todo-cli delete <taskID>\n")
+		return
+	}
+
+	taskID, err := strconv.Atoi(args[2])
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Invalid taskID, %s \n", args[2])
+		return
+	}
+
+	tasks, err := storage.LoadTasks(dataFile)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		return
+	}
+
+	tasks, err = task.DeleteTask(tasks, taskID)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		return
+	}
+
+	if err := storage.SaveTasks(dataFile, tasks); err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		return
+	}
+
+	fmt.Printf("Task with taskID : %d deleted successfully\n", taskID)
+
+}

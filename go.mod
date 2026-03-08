@@ -2,9 +2,17 @@ module example.com/todo-cli
 
 go 1.24.4
 
-require github.com/gofrs/flock v0.13.0
+require (
+	github.com/gofrs/flock v0.13.0
+	github.com/mergestat/timediff v0.0.4
+)
 
 require (
-	github.com/mergestat/timediff v0.0.4 // indirect
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/spf13/pflag v1.0.9 // indirect
+)
+
+require (
+	github.com/spf13/cobra v1.10.2
 	golang.org/x/sys v0.37.0 // indirect
 )
