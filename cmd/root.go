@@ -10,7 +10,7 @@ const dataFile = "tasks.csv"
 
 var rootCmd *cobra.Command = &cobra.Command{
 	Use:   "todo-cli",
-	Short: "A CLI todod manager",
+	Short: "A CLI todo manager",
 }
 
 func Execute() {

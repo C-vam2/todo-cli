@@ -24,14 +24,10 @@ func init() {
 }
 
 func handleComplete(args []string) {
-	if len(args) < 3 {
-		fmt.Fprintf(os.Stderr, "Missing task ID. Required Format: todo-cli complete <ID>")
-		return
-	}
 
-	taskId, err := strconv.Atoi(args[2])
+	taskId, err := strconv.Atoi(args[0])
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Invalid taskId, %s\n", args[2])
+		fmt.Fprintf(os.Stderr, "Invalid taskId, %s\n", args[0])
 		return
 	}
 

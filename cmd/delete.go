@@ -25,15 +25,10 @@ func init() {
 
 func handleDelete(args []string) {
 
-	if len(args) < 3 {
-		fmt.Fprintf(os.Stderr, "Missing task ID. Required format: todo-cli delete <taskID>\n")
-		return
-	}
-
 	taskID, err := strconv.Atoi(args[2])
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Invalid taskID, %s \n", args[2])
+		fmt.Fprintf(os.Stderr, "Invalid taskID, %s \n", args[0])
 		return
 	}
 

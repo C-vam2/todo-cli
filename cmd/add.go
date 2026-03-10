@@ -26,12 +26,7 @@ func init() {
 
 func handleAdd(args []string) {
 
-	if len(args) < 3 {
-		fmt.Fprintln(os.Stderr, "Please provide description for your TODO task\n Format: todo-cli add '<description>'")
-		return
-	}
-
-	newTask := strings.Join(args[2:], " ")
+	newTask := strings.Join(args, " ")
 
 	if newTask == "" {
 		fmt.Fprintln(os.Stderr, "Your task is empty")
