@@ -12,19 +12,19 @@ import (
 
 var listCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
-		handleList()
+		handleList(showAll)
 	},
 	Use:   "list",
-	Short: "Lists all the incompleted tasks",
+	Short: "List pending tasks (use -a to include completed)",
 }
 var showAll bool
 
 func init() {
 	rootCmd.AddCommand(listCmd)
-	listCmd.Flags().BoolVarP(&showAll, "all", "a", false, "fetches all the tasks")
+	listCmd.Flags().BoolVarP(&showAll, "all", "a", false, "show completed tasks")
 }
 
-func handleList() {
+func handleList(showAll bool) {
 	tasks, err := storage.LoadTasks(dataFile)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
