@@ -5,6 +5,13 @@ import (
 	"time"
 )
 
+type TaskRepository interface {
+	GetTasks() ([]Task, error)
+	AddTasks(description string) (Task, error)
+	CompleteTask(ID int) (Task, error)
+	DeleteTask(ID int) error
+}
+
 type Task struct {
 	ID          int
 	Description string
