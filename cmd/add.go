@@ -1,11 +1,12 @@
 package cmd
 
 import (
+	"encoding/csv"
 	"fmt"
 	"os"
 	"strings"
 
-	"example.com/todo-cli/internal/storage"
+	// "example.com/todo-cli/internal/storage"
 	"example.com/todo-cli/internal/task"
 	"github.com/spf13/cobra"
 )
@@ -33,14 +34,14 @@ func handleAdd(args []string) {
 		return
 	}
 
-	tasks, err := storage.LoadTasks(dataFile)
+	tasks, err := csv.LoadTasks(dataFile)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return
 	}
 
 	newTasks := task.AddTask(tasks, newTask)
-	err = storage.SaveTasks(dataFile, newTasks)
+	err = csv.SaveTasks(dataFile, newTasks)
 
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)

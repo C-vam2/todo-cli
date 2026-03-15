@@ -73,3 +73,39 @@ func (postgres *PostgresStorage) GetTasks(ctx context.Context) ([]task.Task, err
 
 	return tasks, nil
 }
+
+func (postgres *PostgresStorage) AddTasks(ctx context.Context, t *task.Task) error {
+	conn := postgres.conn
+
+	queryString := `
+		INSERT INTO tasks (description,created_at,is_complete)
+		VALUES ($1,$2,$3)
+		RETURNING id
+	`
+
+	row := conn.QueryRow(ctx, queryString, t.Description, t.CreatedAt, t.IsComplete)
+
+	if err := row.Scan(&t.ID); err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func (postgres *PostgresStorage) UpdateTask(ctx context.Context, t *task.Task) error {
+	conn := postgres.conn
+
+	queryString := `
+	UPDATE tasks
+	SET description=$1,created_at=$2,is_complete=$3
+	WHERE ID = $4
+  `
+	_, err := conn.Exec(ctx, queryString, t.Description, t.CreatedAt, t.IsComplete, t.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
