@@ -5,7 +5,7 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"example.com/todo-cli/internal/storage"
+	"example.com/todo-cli/internal/storage/csv"
 	"github.com/mergestat/timediff"
 	"github.com/spf13/cobra"
 )
@@ -25,7 +25,7 @@ func init() {
 }
 
 func handleList(showAll bool) {
-	tasks, err := storage.LoadTasks(dataFile)
+	tasks, err := csv.LoadTasks(dataFile)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return

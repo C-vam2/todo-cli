@@ -1,52 +1,39 @@
 package cmd
 
 import (
-	"encoding/csv"
+	"context"
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
-	// "example.com/todo-cli/internal/storage"
 	"example.com/todo-cli/internal/task"
 	"github.com/spf13/cobra"
 )
 
-var addCmd = &cobra.Command{
-	Run: func(cmd *cobra.Command, args []string) {
-		handleAdd(args)
-	},
-	Args: cobra.MinimumNArgs(1),
+func NewAddCmd(repo task.TaskRepository) *cobra.Command {
+	return &cobra.Command{
+		Run: func(cmd *cobra.Command, args []string) {
 
-	Use:   "add [task]",
-	Short: "Add a new task",
-}
+			description := strings.Join(args, " ")
 
-func init() {
-	rootCmd.AddCommand(addCmd)
-}
+			if description == "" {
+				fmt.Fprintln(os.Stderr, "Your task is empty")
+				return
+			}
 
-func handleAdd(args []string) {
+			t := task.Task{
+				Description: description,
+				CreatedAt:   time.Now(),
+				IsComplete:  false,
+			}
 
-	newTask := strings.Join(args, " ")
-
-	if newTask == "" {
-		fmt.Fprintln(os.Stderr, "Your task is empty")
-		return
+			if err := repo.AddTasks(context.Background(), &t); err != nil {
+				fmt.Fprintln(os.Stderr, err)
+			}
+		},
+		Args:  cobra.MinimumNArgs(1),
+		Use:   "add [task]",
+		Short: "add a new task",
 	}
-
-	tasks, err := csv.LoadTasks(dataFile)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return
-	}
-
-	newTasks := task.AddTask(tasks, newTask)
-	err = csv.SaveTasks(dataFile, newTasks)
-
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return
-	}
-
-	fmt.Println("Added task:", newTask)
 }

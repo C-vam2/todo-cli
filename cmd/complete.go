@@ -5,7 +5,7 @@ import (
 	"os"
 	"strconv"
 
-	"example.com/todo-cli/internal/storage"
+	"example.com/todo-cli/internal/storage/csv"
 	"example.com/todo-cli/internal/task"
 	"github.com/spf13/cobra"
 )
@@ -31,7 +31,7 @@ func handleComplete(args []string) {
 		return
 	}
 
-	tasks, err := storage.LoadTasks(dataFile)
+	tasks, err := csv.LoadTasks(dataFile)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %s retrieving tasks from storage.Try again.\n", err)
 		return
@@ -42,7 +42,7 @@ func handleComplete(args []string) {
 		return
 	}
 
-	if err := storage.SaveTasks(dataFile, tasks); err != nil {
+	if err := csv.SaveTasks(dataFile, tasks); err != nil {
 		fmt.Fprintf(os.Stderr, "Error : %s occured while saving the tasks. Try again.\n", err)
 		return
 	}
