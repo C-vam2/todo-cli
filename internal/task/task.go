@@ -1,15 +1,16 @@
 package task
 
 import (
+	"context"
 	"fmt"
 	"time"
 )
 
 type TaskRepository interface {
-	GetTasks() ([]Task, error)
-	AddTasks(description string) (Task, error)
-	CompleteTask(ID int) (Task, error)
-	DeleteTask(ID int) error
+	GetTasks(ctx context.Context) ([]Task, error)
+	AddTasks(ctx context.Context, t *Task) error
+	UpdateTask(ctx context.Context, t *Task) error
+	DeleteTask(ctx context.Context, id int) error
 }
 
 type Task struct {
