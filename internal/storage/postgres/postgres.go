@@ -8,7 +8,7 @@ import (
 )
 
 type PostgresStorage struct {
-	conn *pgx.Conn
+	Conn *pgx.Conn
 }
 
 func NewPostgresStorage(ctx context.Context, connStr string) (*PostgresStorage, error) {
@@ -18,11 +18,25 @@ func NewPostgresStorage(ctx context.Context, connStr string) (*PostgresStorage, 
 		return nil, err
 	}
 
-	return &PostgresStorage{conn: conn}, nil
+	queryString := `
+		CREATE TABLE IF NOT EXISTS tasks(
+			id SERIAL PRIMARY KEY,
+			description TEXT NOT NULL,
+			created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+			is_complete BOOLEAN DEFAULT FALSE
+		)
+	`
+
+	_, err = conn.Exec(ctx, queryString)
+	if err != nil {
+		return nil, err
+	}
+
+	return &PostgresStorage{Conn: conn}, nil
 }
 
 func (postgres *PostgresStorage) DeleteTask(ctx context.Context, id int) error {
-	conn := postgres.conn
+	conn := postgres.Conn
 
 	queryString := `
 	DELETE FROM tasks
@@ -40,7 +54,7 @@ func (postgres *PostgresStorage) DeleteTask(ctx context.Context, id int) error {
 }
 
 func (postgres *PostgresStorage) GetTasks(ctx context.Context) ([]task.Task, error) {
-	conn := postgres.conn
+	conn := postgres.Conn
 
 	queryString := `
 	SELECT id,description,created_at,is_complete 
@@ -75,7 +89,7 @@ func (postgres *PostgresStorage) GetTasks(ctx context.Context) ([]task.Task, err
 }
 
 func (postgres *PostgresStorage) AddTasks(ctx context.Context, t *task.Task) error {
-	conn := postgres.conn
+	conn := postgres.Conn
 
 	queryString := `
 		INSERT INTO tasks (description,created_at,is_complete)
@@ -94,7 +108,7 @@ func (postgres *PostgresStorage) AddTasks(ctx context.Context, t *task.Task) err
 }
 
 func (postgres *PostgresStorage) UpdateTask(ctx context.Context, t *task.Task) error {
-	conn := postgres.conn
+	conn := postgres.Conn
 
 	queryString := `
 	UPDATE tasks
@@ -108,4 +122,20 @@ func (postgres *PostgresStorage) UpdateTask(ctx context.Context, t *task.Task) e
 	}
 
 	return nil
+}
+
+func (postgres *PostgresStorage) GetTask(ctx context.Context, id int) (task.Task, error) {
+	conn := postgres.Conn
+
+	queryString := `
+		SELECT id,description,created_at,is_complete
+		FROM tasks
+		WHERE ID = $1 
+	`
+	row := conn.QueryRow(ctx, queryString, id)
+	t := task.Task{}
+	if err := row.Scan(&t.ID, &t.Description, &t.CreatedAt, &t.IsComplete); err != nil {
+		return task.Task{}, err
+	}
+	return t, nil
 }

@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
+	"example.com/todo-cli/internal/task"
 	"github.com/spf13/cobra"
 )
 
@@ -13,8 +15,17 @@ var rootCmd *cobra.Command = &cobra.Command{
 	Short: "A CLI todo manager",
 }
 
-func Execute() {
+func Execute(repo task.TaskRepository) {
+
+	rootCmd.AddCommand(
+		NewAddCmd(repo),
+		NewDeleteCmd(repo),
+		NewListCmd(repo),
+		NewUpdateCmd(repo),
+	)
+
 	if err := rootCmd.Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
