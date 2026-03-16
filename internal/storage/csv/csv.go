@@ -1,7 +1,10 @@
 package csv
 
 import (
+	"context"
 	"encoding/csv"
+	"errors"
+	"fmt"
 	"os"
 	"strconv"
 	"time"
@@ -9,6 +12,137 @@ import (
 	"example.com/todo-cli/internal/task"
 	"github.com/gofrs/flock"
 )
+
+type CSVStorage struct {
+	filePath string
+}
+
+func NewCSVStorage(filePath string) (*CSVStorage, error) {
+	if filePath == "" {
+		err := errors.New("Invalid file path.")
+		fmt.Fprintln(os.Stderr, err)
+		return nil, err
+	}
+
+	return &CSVStorage{filePath: filePath}, nil
+}
+
+func (storage *CSVStorage) AddTasks(ctx context.Context, t *task.Task) error {
+	filepath := storage.filePath
+
+	tasks, err := LoadTasks(filepath)
+
+	if err != nil {
+		return err
+	}
+
+	var maxId int = 0
+	for _, value := range tasks {
+		maxId = max(maxId, value.ID)
+	}
+	t.ID = maxId + 1
+	tasks = append(tasks, *t)
+
+	if err := SaveTasks(filepath, tasks); err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func (storage *CSVStorage) DeleteTask(ctx context.Context, id int) error {
+	filePath := storage.filePath
+
+	tasks, err := LoadTasks(filePath)
+
+	if err != nil {
+		return err
+	}
+
+	newTasks := []task.Task{}
+	var taskFound bool
+	for _, task := range tasks {
+		if task.ID != id {
+			newTasks = append(newTasks, task)
+		} else {
+			taskFound = true
+		}
+	}
+
+	if !taskFound {
+		return fmt.Errorf("task with ID: %d not found", id)
+	}
+
+	if err := SaveTasks(filePath, newTasks); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (storage *CSVStorage) UpdateTask(ctx context.Context, t *task.Task) error {
+	filePath := storage.filePath
+
+	tasks, err := LoadTasks(filePath)
+
+	if err != nil {
+		return err
+	}
+
+	newTasks := []task.Task{}
+	var taskFound bool
+	for _, task := range tasks {
+		if task.ID != t.ID {
+			newTasks = append(newTasks, task)
+		} else {
+			if task.IsComplete {
+				return fmt.Errorf("Task is already completed")
+			}
+			task.IsComplete = true
+			newTasks = append(newTasks, task)
+			taskFound = true
+		}
+	}
+
+	if !taskFound {
+		return fmt.Errorf("task with ID: %d not found", t.ID)
+	}
+
+	if err := SaveTasks(filePath, newTasks); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (storage *CSVStorage) GetTasks(ctx context.Context) ([]task.Task, error) {
+	filepath := storage.filePath
+
+	tasks, err := LoadTasks(filepath)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return tasks, nil
+}
+
+func (storage *CSVStorage) GetTask(ctx context.Context, id int) (task.Task, error) {
+	filePath := storage.filePath
+
+	tasks, err := LoadTasks(filePath)
+	if err != nil {
+		return task.Task{}, err
+	}
+
+	for _, task := range tasks {
+		if task.ID == id {
+			return task, nil
+		}
+	}
+
+	return task.Task{}, fmt.Errorf("task with ID: %d not found", id)
+
+}
 
 func SaveTasks(filepath string, tasks []task.Task) error {
 	lock := flock.New(filepath + ".lock")
