@@ -8,9 +8,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const dataFile = "tasks.csv"
-
 var rootCmd *cobra.Command = &cobra.Command{
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			fmt.Println("This is when the len of args is zero")
+		} else {
+			fmt.Println("This is with nonzero args length")
+		}
+	},
 	Use:   "todo-cli",
 	Short: "A CLI todo manager",
 }
@@ -22,6 +27,7 @@ func Execute(repo task.TaskRepository) {
 		NewDeleteCmd(repo),
 		NewListCmd(repo),
 		NewUpdateCmd(repo),
+		NewConfigureCmd(),
 	)
 
 	if err := rootCmd.Execute(); err != nil {
